@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>瀑布流_加载更多_随窗口改变</title>
+<style>
+*{
+	margin:0;
+	padding:0;
+	list-style:none;
+}
+ul{
+	width:1200px;
+	margin:0 auto;
+	position:relative;
+}
+li {
+	width:180px;
+	padding:10px;
+	position:absolute;
+	left:0;
+	top:0;
+	opacity:0;
+}
+li img{
+	width:180px;
+	height:auto;
+}
+button{
+	width: 70%;
+	height: 40px;
+	position: fixed;
+	left: 15%;
+	bottom: 0px;
+	background-color: #7ACFFF;
+	line-height: 40px;
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	outline: none;
+	border: none;
+	color: #FFF;
+	cursor: pointer;
+}
+</style>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script>
+$(function(){
+	var water = new Water(200);//li的宽度
+	var arr = ["1.jpg","2.jpg","3.jpg","4.jpg","5.jpg","6.jpg","7.jpg","8.jpg","9.jpg","10.jpg"];//图片地址
+	loadImg(arr);
+	$("button").click(function(){
+		loadImg(arr);
+	});
+	function loadImg(arr){
+		for(var i=0; i<arr.length; i++){
+			water.add(arr[i]);
+			water.li.find("img").load(function(){
+				water.minTop().calc($(this).parent().outerHeight()).move($(this).parent());
+			});
+		}
+	}
+	$(window).resize(function(){
+		clearTimeout(water.timer);
+		water.init();
+		water.timer = setTimeout(function(){
+			$("li").each(function(index){
+				water.minTop().calc($(this).outerHeight()).move($(this));
+			});
+		},50);
+	});
+});
+function Water(width){
+	this.wLi = width;
+	this.init();
+}
+Water.prototype={
+	init:function(){
+		this.nCol = Math.floor(window.innerWidth/this.wLi);
+		this.wUl = this.nCol*this.wLi;
+		this.aTop = [];
+		this.index = 0;
+		$("ul").css("width",this.wUl);
+		return this;
+	},
+	add:function(url){
+		this.li = $("<li><img src='images/"+url+"'></li>");
+		$("ul").append(this.li);
+		return this;
+	},
+	calc:function(height){
+		if(this.index < this.nCol){
+			this.aTop.push(height);
+			this.top = 0;
+			this.left = this.wLi*this.index;
+		}else{
+			this.aTop[this.col] += height;
+			this.left = this.wLi*this.col;
+		}
+		this.index++;
+		return this;
+	},
+	minTop:function(){
+		this.col = 0;
+		this.top = this.aTop[this.col];
+		for(var i=1; i<this.aTop.length; i++){
+			if(this.top > this.aTop[i]){
+				this.top = this.aTop[i]
+				this.col = i;
+			}
+		}
+		return this;
+	},
+	move:function(li){
+		li.animate({"left":this.left,"top":this.top,"opacity":100},500);
+		return this
+	}
+}
+</script>
+
+</head>
+
+<body>
+<ul>
+</ul>
+<button>加载更多...</button>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
